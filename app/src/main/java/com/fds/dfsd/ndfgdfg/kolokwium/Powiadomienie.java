@@ -24,18 +24,25 @@ public class Powiadomienie extends Service {
         Powiadomienie.podlaczony = podlaczony;
     }
 
-    static long podlaczony;
+    public static long getPodlaczony() {
+        return podlaczony;
+    }
+
+    private static long podlaczony = 0;
 
     public static void setOdlaczony(long odlaczony) {
         Powiadomienie.odlaczony = odlaczony;
     }
 
-    static long odlaczony;
+    public static long getOdlaczony() {
+        return odlaczony;
+    }
 
-    Calendar cal = Calendar.getInstance();
-    SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss.SSS");
+    private static long odlaczony = 0;
 
-    void playSound(){
+
+
+    void playSound() {
         try {
             Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
@@ -54,24 +61,25 @@ public class Powiadomienie extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String action=intent.getAction();
+        String action = intent.getAction();
 
-        if("ACTION_POWER_CONNECTED".equals(action))
-        {
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss.SSS");
+
+        if ("ACTION_POWER_CONNECTED".equals(action)) {
             playSound();
             Toast.makeText(getApplication(), "Podłączono zasilanie " + sdf.format(cal.getTime()), Toast.LENGTH_LONG).show();
-        }
-        else
-        if("ACTION_POWER_DISCONNECTED".equals(action)) {
+        } else if ("ACTION_POWER_DISCONNECTED".equals(action)) {
             playSound();
             Toast.makeText(getApplication(), "odłączono zasilanie " + sdf.format(cal.getTime()), Toast.LENGTH_LONG).show();
 
             Handler h = new Handler(Looper.getMainLooper());
             h.postDelayed(new Runnable() {
-                long millis = (odlaczony - podlaczony);
+                long millis = (getOdlaczony() - getPodlaczony());
+
                 @Override
                 public void run() {
-                    if(podlaczony == 0 || millis <=0) {
+                    if (getPodlaczony() == 0 || millis <= 0) {
                         return;
                     }
 
@@ -80,7 +88,7 @@ public class Powiadomienie extends Service {
                             TimeUnit.MILLISECONDS.toMinutes(millis) -
                                     TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)), // The change is in this line
                             TimeUnit.MILLISECONDS.toSeconds(millis) -
-                                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)), millis%1000);
+                                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)), millis % 1000);
                     Toast.makeText(getApplication(), "trwało " + a, Toast.LENGTH_LONG).show();
                 }
             }, 8000);
